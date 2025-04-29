@@ -270,3 +270,13 @@ QL(y, ŷ, q) = q * max(y - ŷ, 0) + (1 - q) * max(ŷ - y, 0)
 ## References
 
 > Bryan Lim et al., *Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting* - https://arxiv.org/abs/1912.09363
+
+## 👤 Author
+
+For any questions or issues, please open an issue on GitHub: [@Siddharth Mishra](https://github.com/Sid3503)
+
+---
+
+<p align="center">
+  Made with ❤️ and lots of ☕
+</p>
