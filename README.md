@@ -66,10 +66,6 @@ future_covariates = TimeSeries.from_dataframe(df[['Exogenous1', 'Exogenous2', 'h
 
 ---
 
-Excellent — here’s an expanded and refined section you can add to your `README.md` that not only previews the data but also explains the **importance** of each processing step and the **intermediate objects** created (`series`, `covariates`, `future_covariates`). This helps users **understand what’s happening, why it’s necessary**, and **how it helps the model**.
-
----
-
 ## 🔧 Data Processing – Why It Matters
 
 TFT requires **structured, complete, and aligned** time series inputs. Simply throwing raw CSV data at it won’t work. Proper preprocessing ensures:
@@ -207,8 +203,6 @@ time
   - Handle multiple horizons properly
 
 ---
-
-Would you like me to embed this directly into your README file for you?
 
 ## Learning Objective (Formula Simplified)
 
