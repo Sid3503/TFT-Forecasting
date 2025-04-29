@@ -66,6 +66,150 @@ future_covariates = TimeSeries.from_dataframe(df[['Exogenous1', 'Exogenous2', 'h
 
 ---
 
+Excellent — here’s an expanded and refined section you can add to your `README.md` that not only previews the data but also explains the **importance** of each processing step and the **intermediate objects** created (`series`, `covariates`, `future_covariates`). This helps users **understand what’s happening, why it’s necessary**, and **how it helps the model**.
+
+---
+
+## 🔧 Data Processing – Why It Matters
+
+TFT requires **structured, complete, and aligned** time series inputs. Simply throwing raw CSV data at it won’t work. Proper preprocessing ensures:
+- ✅ No duplicate timestamps (which would break temporal order)
+- ✅ All timestamps are aligned (missing hours are filled)
+- ✅ Past and future features are formatted correctly
+- ✅ Exogenous features (covariates) are available where needed
+
+This section highlights how each transformation feeds into the model and **why it's essential**.
+
+---
+
+## 📥 Processing Flow and Intermediate Objects
+
+### Step-by-step Breakdown with Output
+
+#### 📌 Step 1: Load and clean the main data
+
+```python
+df = pd.read_csv("/kaggle/input/dummydata/electricity.csv", index_col='ds', parse_dates=True)
+df = df[~df.index.duplicated(keep='first')]
+```
+
+- **Purpose**: Ensures time index is clean, with unique, ordered timestamps.
+- Without this, Darts' resampling (`fill_missing_dates=True`) would fail.
+
+---
+
+#### 📌 Step 2: Create the main target `series`
+
+```python
+series = TimeSeries.from_dataframe(df, value_cols='y', fill_missing_dates=True, freq='h')
+```
+
+- **Object:** `series`
+- **Contains:** The time series of electricity usage (`y`) as the target variable.
+- **Why important?** This is what the model learns to predict.
+- **Internally:** Looks like:
+
+```
+TimeSeries
+start: 2016-10-22 00:00:00
+end:   2016-12-30 23:00:00
+data:
+                            y
+time                         
+2016-10-22 00:00:00     70.00
+2016-10-22 01:00:00     37.10
+...                        ...
+```
+
+---
+
+#### 📌 Step 3: Extract past exogenous features (covariates)
+
+```python
+X_past = df[['Exogenous1', 'Exogenous2']]
+covariates = TimeSeries.from_dataframe(X_past, fill_missing_dates=True, freq='h')
+```
+
+- **Object:** `covariates`
+- **Contains:** Features known in the past that may influence `y` (e.g., load in other regions).
+- **Why important?** Helps the model learn correlations like:
+  > “When `Exogenous1` goes up, `y` tends to increase.”
+
+- **Internally:**
+
+```
+TimeSeries
+columns: ['Exogenous1', 'Exogenous2']
+data:
+                            Exogenous1  Exogenous2
+time                                            
+2016-10-22 00:00:00        49593       57253
+2016-10-22 01:00:00        46073       51887
+...
+```
+
+---
+
+#### 📌 Step 4: Prepare known future inputs
+
+```python
+future_df = pd.read_csv('/kaggle/input/dummydata/electricity-future.csv', index_col='ds', parse_dates=True)
+future_df = future_df[~future_df.index.duplicated(keep='first')]
+X_future = future_df[['Exogenous1', 'Exogenous2']]
+```
+
+- **Why important?**
+  - You don’t know `y` for the future (that’s what you're predicting).
+  - But you *do* know things like calendar info or scheduled events.
+- These are essential for multi-step forecasting.
+
+---
+
+#### 📌 Step 5: Combine past and future into `future_covariates`
+
+```python
+X = pd.concat([X_past, X_future])
+future_covariates = TimeSeries.from_dataframe(X, fill_missing_dates=True, freq='H')
+```
+
+- **Object:** `future_covariates`
+- **Contains:** Covariates that are available from past *and* known in future.
+- **Why important?**
+  - TFT uses these for the decoder (to condition predictions).
+
+- **Internally:**
+
+```
+TimeSeries
+columns: ['Exogenous1', 'Exogenous2']
+data:
+                            Exogenous1  Exogenous2
+time                                            
+...                            ...         ...
+2016-12-31 00:00:00            64108       70318
+2016-12-31 01:00:00            62492       67898
+...
+```
+
+---
+
+## 🎯 Summary: Why These Objects Matter
+
+| Object               | Purpose                                   | Used for        |
+|----------------------|-------------------------------------------|------------------|
+| `series`             | Main target values to predict (`y`)       | Training & eval  |
+| `covariates`         | Past context features (Exogenous1/2)      | Encoder          |
+| `future_covariates`  | Known future values (Exogenous1/2)        | Decoder          |
+
+- Without these structures, TFT cannot:
+  - Learn relationships between variables
+  - Predict into the future
+  - Handle multiple horizons properly
+
+---
+
+Would you like me to embed this directly into your README file for you?
+
 ## Learning Objective (Formula Simplified)
 
 From the paper:
