@@ -18,6 +18,48 @@ The model is split into **three parts**:
 2. **Temporal Fusion Decoder**
 3. **Forecasting Head (Quantile Predictions)**
 
+4. Here’s a **clear and interactive Mermaid flowchart** that visually represents the **Temporal Fusion Transformer (TFT) architecture**, inspired by the official diagram and aligned with our expanded explanation.
+
+You can embed this in a markdown file (`architecture.md`) or your `README.md` if your platform supports Mermaid (e.g., GitHub, Obsidian, MkDocs, etc.).
+
+---
+
+### 🌐 Mermaid Flowchart: Temporal Fusion Transformer (TFT)
+
+<details>
+<summary>📈 Click to expand TFT architecture flowchart (Mermaid)</summary>
+
+```mermaid
+flowchart TD
+    Inputs[Inputs] --> Encoder[LSTM Encoder]
+    Inputs --> Decoder[LSTM Decoder]
+    Inputs --> Static[Static Metadata Encoder]
+
+    Encoder --> VarSelPast[Variable Selection - Past]
+    Decoder --> VarSelFuture[Variable Selection - Future]
+    Static --> StaticEnrich[Static Enrichment]
+
+    VarSelPast --> GRNPast[GRN + Add & Norm - Past]
+    VarSelFuture --> GRNFuture[GRN + Add & Norm - Future]
+    StaticEnrich --> StaticGRN[Inject Static Context]
+
+    GRNPast --> Attention[Masked Multi-head Attention]
+    GRNFuture --> Attention
+    StaticGRN --> Attention
+
+    Attention --> PostGRN[GRN + Add & Norm - Attention]
+    PostGRN --> FF[Feed-Forward Layer]
+    FF --> Output[Quantile Forecast Head]
+
+    Output --> P10[p10 Prediction]
+    Output --> P50[p50 Prediction]
+    Output --> P90[p90 Prediction]
+
+```
+
+</details>
+
+---
 It learns:
 - What features matter (Feature Selection)
 - When it should pay attention (Temporal Attention)
